@@ -14,11 +14,13 @@
     <ClCompile Include="D3D\DXContext.cpp" />
     <ClCompile Include="Debug\DXDebugLayer.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Support\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="D3D\DXContext.h" />
     <ClInclude Include="Debug\DXDebugLayer.h" />
     <ClInclude Include="Support\ComPointer.h" />
+    <ClInclude Include="Support\Window.h" />
     <ClInclude Include="Support\WinInclude.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
