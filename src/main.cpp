@@ -22,9 +22,11 @@ int main()
             // a draw
             
             DXContext::Get().ExecuteCommandList();
-
-            // Show me the stuff
+            DXWindow::Get().Preset();
         }
+
+        // Flushing
+        DXContext::Get().Flush(DXWindow::GetFrameCount());
 
         DXWindow::Get().Shutdown();
         DXContext::Get().Shutdown();

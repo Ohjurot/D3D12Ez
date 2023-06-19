@@ -2,6 +2,11 @@
 
 bool DXContext::Init()
 {
+    if (FAILED(CreateDXGIFactory2(0, IID_PPV_ARGS(&m_dxgiFactory))))
+    {
+        return false;
+    }
+
     if (FAILED(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_device))))
     {
         return false;
@@ -49,8 +54,11 @@ void DXContext::Shutdown()
     {
         CloseHandle(m_fenceEvent);
     }
+    m_fence.Release();
     m_cmdQueue.Release();
     m_device.Release();
+
+    m_dxgiFactory.Release();
 }
 
 void DXContext::SignalAndWait()
