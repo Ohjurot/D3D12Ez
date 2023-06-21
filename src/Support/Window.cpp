@@ -109,10 +109,29 @@ void DXWindow::Shutdown()
     }
 }
 
+void DXWindow::Resize()
+{
+    RECT cr;
+    if (GetClientRect(m_window, &cr))
+    {
+        m_width = cr.right - cr.left;
+        m_height = cr.bottom - cr.top;
+
+        m_swapChain->ResizeBuffers(GetFrameCount(), m_width, m_height, DXGI_FORMAT_UNKNOWN, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH | DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING);
+        m_shouldResize = false;
+    }
+}
+
 LRESULT CALLBACK DXWindow::OnWindowMessage(HWND wnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg)
     {
+        case WM_SIZE:
+            if (lParam && (HIWORD(lParam) != Get().m_height || LOWORD(lParam) != Get().m_width))
+            {
+                Get().m_shouldResize = true;
+            }
+            break;
         case WM_CLOSE:
             Get().m_shouldClose = true;
             return 0;
