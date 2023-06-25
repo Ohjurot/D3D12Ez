@@ -13,6 +13,7 @@ int main()
     DXDebugLayer::Get().Init();
     if (DXContext::Get().Init() && DXWindow::Get().Init())
     {
+        DXWindow::Get().SetFullscreen(true);
         while (!DXWindow::Get().ShouldClose())
         {
             // Process pending window message

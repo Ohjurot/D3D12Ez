@@ -122,10 +122,54 @@ void DXWindow::Resize()
     }
 }
 
+void DXWindow::SetFullscreen(bool enabled)
+{
+    // Update window styling
+    DWORD style = WS_OVERLAPPEDWINDOW | WS_VISIBLE;
+    DWORD exStyle = WS_EX_OVERLAPPEDWINDOW | WS_EX_APPWINDOW;
+    if (enabled)
+    {
+        style = WS_POPUP | WS_VISIBLE;
+        exStyle = WS_EX_APPWINDOW;
+    }
+    SetWindowLongW(m_window, GWL_STYLE, style);
+    SetWindowLongW(m_window, GWL_EXSTYLE, exStyle);
+
+    // Adjust window size
+    if (enabled)
+    {
+        HMONITOR monitor = MonitorFromWindow(m_window, MONITOR_DEFAULTTONEAREST);
+        MONITORINFO monitorInfo{};
+        monitorInfo.cbSize = sizeof(monitorInfo);
+        if (GetMonitorInfoW(monitor, &monitorInfo))
+        {
+            SetWindowPos(m_window, nullptr,
+                monitorInfo.rcMonitor.left,
+                monitorInfo.rcMonitor.top,
+                monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left,
+                monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top,
+                SWP_NOZORDER
+            );
+        }
+    }
+    else
+    {
+        ShowWindow(m_window, SW_MAXIMIZE);
+    }
+
+    m_isFullscreen = enabled;
+}
+
 LRESULT CALLBACK DXWindow::OnWindowMessage(HWND wnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg)
     {
+        case WM_KEYDOWN:
+            if (wParam == VK_F11)
+            {
+                Get().SetFullscreen(!Get().IsFullscreen());
+            }
+            break;
         case WM_SIZE:
             if (lParam && (HIWORD(lParam) != Get().m_height || LOWORD(lParam) != Get().m_width))
             {
