@@ -29,12 +29,16 @@ class DXWindow
             return m_isFullscreen;
         }
 
+        static constexpr size_t FrameCount = 2;
         static constexpr size_t GetFrameCount()
         {
-            return 2;
+            return FrameCount;
         }
 
     private:
+        bool GetBuffers();
+        void ReleaseBuffers();
+
         static LRESULT CALLBACK OnWindowMessage(HWND wnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
     private:
@@ -49,6 +53,7 @@ class DXWindow
         bool m_isFullscreen = false;
         
         ComPointer<IDXGISwapChain3> m_swapChain;
+        ComPointer<ID3D12Resource2> m_buffers[FrameCount];
 
     // singleton
     public:
