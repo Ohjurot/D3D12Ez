@@ -3,6 +3,7 @@
 #include <Support/WinInclude.h>
 #include <Support/ComPointer.h>
 #include <Support/Window.h>
+#include <Support/Shader.h>
 
 #include <Debug/DXDebugLayer.h>
 
@@ -77,11 +78,21 @@ int main()
         cmdList->CopyBufferRegion(vertexBuffer, 0, uploadBuffer, 0, 1024);
         DXContext::Get().ExecuteCommandList();
 
+        // === Shaders ===
+        Shader vertexShader("VertexShader.cso");
+        Shader pixelShader("PixelShader.cso");
+
         // === Pipeline state ===
         D3D12_GRAPHICS_PIPELINE_STATE_DESC gfxPsod{};
         gfxPsod.InputLayout.NumElements = _countof(vertexLayout);
         gfxPsod.InputLayout.pInputElementDescs = vertexLayout;
         gfxPsod.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
+        gfxPsod.VS.BytecodeLength = vertexShader.GetSize();
+        gfxPsod.VS.pShaderBytecode = vertexShader.GetBuffer();
+        // TODO: Rasterizer
+        gfxPsod.PS.BytecodeLength = vertexShader.GetSize();
+        gfxPsod.PS.pShaderBytecode = vertexShader.GetBuffer();
+        // TODO: OutputMerger
 
         // === Vertex buffer view ===
         D3D12_VERTEX_BUFFER_VIEW vbv{};
