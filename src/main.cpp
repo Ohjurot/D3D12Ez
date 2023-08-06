@@ -79,12 +79,17 @@ int main()
         DXContext::Get().ExecuteCommandList();
 
         // === Shaders ===
+        Shader rootSignatureShader("RootSignature.cso");
         Shader vertexShader("VertexShader.cso");
         Shader pixelShader("PixelShader.cso");
 
+        // === Create root signature ===
+        ComPointer<ID3D12RootSignature> rootSignature;
+        DXContext::Get().GetDevice()->CreateRootSignature(0, rootSignatureShader.GetBuffer(), rootSignatureShader.GetSize(), IID_PPV_ARGS(&rootSignature));
+
         // === Pipeline state ===
         D3D12_GRAPHICS_PIPELINE_STATE_DESC gfxPsod{};
-        // TODO: pRootSignature
+        gfxPsod.pRootSignature = rootSignature;
         gfxPsod.InputLayout.NumElements = _countof(vertexLayout);
         gfxPsod.InputLayout.pInputElementDescs = vertexLayout;
         gfxPsod.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
@@ -92,9 +97,32 @@ int main()
         gfxPsod.VS.pShaderBytecode = vertexShader.GetBuffer();
         gfxPsod.PS.BytecodeLength = vertexShader.GetSize();
         gfxPsod.PS.pShaderBytecode = vertexShader.GetBuffer();
-        // TODO: RasterizerState, StreamOutput
+        gfxPsod.DS.BytecodeLength = 0;
+        gfxPsod.DS.pShaderBytecode = nullptr;
+        gfxPsod.HS.BytecodeLength = 0;
+        gfxPsod.HS.pShaderBytecode = nullptr;
+        gfxPsod.GS.BytecodeLength = 0;
+        gfxPsod.GS.pShaderBytecode = nullptr;
+        gfxPsod.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
+        gfxPsod.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+        gfxPsod.RasterizerState.FrontCounterClockwise = FALSE;
+        gfxPsod.RasterizerState.DepthBias = 0;
+        gfxPsod.RasterizerState.DepthBiasClamp = .0f;
+        gfxPsod.RasterizerState.SlopeScaledDepthBias = .0f;
+        gfxPsod.RasterizerState.DepthClipEnable = FALSE;
+        gfxPsod.RasterizerState.MultisampleEnable = FALSE;
+        gfxPsod.RasterizerState.AntialiasedLineEnable = FALSE;
+        gfxPsod.RasterizerState.ForcedSampleCount = 0;
+        gfxPsod.StreamOutput.NumEntries = 0;
+        gfxPsod.StreamOutput.NumStrides = 0;
+        gfxPsod.StreamOutput.pBufferStrides = nullptr;
+        gfxPsod.StreamOutput.pSODeclaration = nullptr;
+        gfxPsod.StreamOutput.RasterizedStream = 0;
         // TODO: BlendState, DepthStencilState, SampleMask, NumRenderTargets, RTVFormats, DSVFormat, SampleDesc
-        // TODO: NodeMask, CachedPSO, Flags
+        gfxPsod.NodeMask = 0;
+        gfxPsod.CachedPSO.CachedBlobSizeInBytes = 0;
+        gfxPsod.CachedPSO.pCachedBlob = nullptr;
+        gfxPsod.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 
         // === Vertex buffer view ===
         D3D12_VERTEX_BUFFER_VIEW vbv{};
