@@ -84,15 +84,17 @@ int main()
 
         // === Pipeline state ===
         D3D12_GRAPHICS_PIPELINE_STATE_DESC gfxPsod{};
+        // TODO: pRootSignature
         gfxPsod.InputLayout.NumElements = _countof(vertexLayout);
         gfxPsod.InputLayout.pInputElementDescs = vertexLayout;
         gfxPsod.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
         gfxPsod.VS.BytecodeLength = vertexShader.GetSize();
         gfxPsod.VS.pShaderBytecode = vertexShader.GetBuffer();
-        // TODO: Rasterizer
         gfxPsod.PS.BytecodeLength = vertexShader.GetSize();
         gfxPsod.PS.pShaderBytecode = vertexShader.GetBuffer();
-        // TODO: OutputMerger
+        // TODO: RasterizerState, StreamOutput
+        // TODO: BlendState, DepthStencilState, SampleMask, NumRenderTargets, RTVFormats, DSVFormat, SampleDesc
+        // TODO: NodeMask, CachedPSO, Flags
 
         // === Vertex buffer view ===
         D3D12_VERTEX_BUFFER_VIEW vbv{};
