@@ -2,6 +2,7 @@
 
 #include <Support/WinInclude.h>
 #include <Support/ComPointer.h>
+#include <Support/ImageLoader.h>
 #include <Support/Window.h>
 #include <Support/Shader.h>
 
@@ -89,6 +90,10 @@ int main()
         uploadBuffer->Map(0, &uploadRange, &uploadBufferAddress);
         memcpy(uploadBufferAddress, verticies, sizeof(verticies));
         uploadBuffer->Unmap(0, &uploadRange);
+
+        // === Texture ===
+        ImageLoader::ImageData textureData;
+        ImageLoader::LoadImageFromDisk("./auge_512_512_BGRA_32BPP.png", textureData);
 
         // Copy CPU Resource --> GPU Resource
         auto* cmdList = DXContext::Get().InitCommandList();
