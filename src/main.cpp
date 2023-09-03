@@ -51,17 +51,19 @@ int main()
         struct Vertex
         {
             float x, y;
+            float u, v;
         };
         Vertex verticies[] =
         {
             // T1
-            { -1.f, -1.f },
-            {  0.f,  1.f },
-            {  1.f, -1.f },
+            { -1.f, -1.f, 0.0f, 1.0f },
+            {  0.f,  1.f, 0.5f, 0.0f },
+            {  1.f, -1.f, 1.0f, 1.0f },
         };
         D3D12_INPUT_ELEMENT_DESC vertexLayout[] =
         {
             { "Position", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+            { "Texcoord", 0, DXGI_FORMAT_R32G32_FLOAT, 0, sizeof(float) * 2, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
         };
 
         // === Texture Data === 
@@ -117,6 +119,27 @@ int main()
 
         ComPointer<ID3D12Resource2> texture;
         DXContext::Get().GetDevice()->CreateCommittedResource(&hpDefault, D3D12_HEAP_FLAG_NONE, &rdt, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&texture));
+
+        // == Descriptor Heap for Texture(s) ==
+        D3D12_DESCRIPTOR_HEAP_DESC dhd{};
+        dhd.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+        dhd.NumDescriptors = 8;
+        dhd.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+        dhd.NodeMask = 0;
+
+        ComPointer<ID3D12DescriptorHeap> srvheap;
+        DXContext::Get().GetDevice()->CreateDescriptorHeap(&dhd, IID_PPV_ARGS(&srvheap));
+
+        // == SRV ==
+        D3D12_SHADER_RESOURCE_VIEW_DESC srv{};
+        srv.Format = textureData.giPixelFormat;
+        srv.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+        srv.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        srv.Texture2D.MipLevels = 1;
+        srv.Texture2D.MostDetailedMip = 0;
+        srv.Texture2D.PlaneSlice = 0;
+        srv.Texture2D.ResourceMinLODClamp = 0.0f;
+        DXContext::Get().GetDevice()->CreateShaderResourceView(texture, &srv, srvheap->GetCPUDescriptorHandleForHeapStart());
 
         // Copy void* --> CPU Resource
         char* uploadBufferAddress;
@@ -260,6 +283,7 @@ int main()
             // == PSO ==
             cmdList->SetPipelineState(pso);
             cmdList->SetGraphicsRootSignature(rootSignature);
+            cmdList->SetDescriptorHeaps(1, &srvheap);
             // == IA ==
             cmdList->IASetVertexBuffers(0, 1, &vbv);
             cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -277,12 +301,32 @@ int main()
             scRect.bottom = DXWindow::Get().GetHeight();
             cmdList->RSSetScissorRects(1, &scRect);
 
-            // == ROOT ==
+            // == Update ==
             static float color[] = { 0.0f, 0.0f, 0.0f };
             pukeColor(color);
-            cmdList->SetGraphicsRoot32BitConstants(0, 3, color, 0);
 
-            // Draw
+            static float angel = 0.0f;
+            angel += 0.01f;
+            struct Correction
+            {
+                float aspectRatio;
+                float zoom;
+                float sinAngel;
+                float cosAngel;
+            };
+            Correction correction{
+                .aspectRatio = ((float)DXWindow::Get().GetHeight()) / ((float)DXWindow::Get().GetWidth()),
+                .zoom = 0.8f,
+                .sinAngel = sinf(angel),
+                .cosAngel = cosf(angel),
+            };
+
+            // == ROOT ==
+            cmdList->SetGraphicsRoot32BitConstants(0, 3, color, 0);
+            cmdList->SetGraphicsRoot32BitConstants(1, 4, &correction, 0);
+            cmdList->SetGraphicsRootDescriptorTable(2, srvheap->GetGPUDescriptorHandleForHeapStart());
+
+            // == Draw ==
             cmdList->DrawInstanced(_countof(verticies), 1, 0, 0);
 
             DXWindow::Get().EndFrame(cmdList);
