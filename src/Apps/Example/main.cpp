@@ -10,6 +10,10 @@
 
 #include <D3D/DXContext.h>
 
+#include <Util/EZException.h>
+#include <Util/HRException.h>
+#include <Util/LoggingProvider.h>
+
 void pukeColor(float* color)
 {
     static int pukeState = 0;
@@ -29,6 +33,13 @@ void pukeColor(float* color)
 
 int main()
 {
+    D3EZ::LoggingProvider::Init();
+    spdlog::info("Hello World!");
+    spdlog::warn("Hello World!");
+
+    D3EZ_CHECK_HR_D(E_OUTOFMEMORY, "Example");
+    D3EZ_CHECK_D(false, "Code implemented beyond is unsave!");
+
     DXDebugLayer::Get().Init();
     if (DXContext::Get().Init() && DXWindow::Get().Init())
     {
