@@ -3,6 +3,8 @@
 #include <Support/WinInclude.h>
 #include <Support/ComPointer.h>
 
+#include <cstdlib>
+
 class DXContext
 {
     public:
